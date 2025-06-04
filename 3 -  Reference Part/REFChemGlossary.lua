@@ -8,8 +8,9 @@ RefChemGlossary.search.ww = -10
 RefChemGlossary.list = sList()
 RefChemGlossary.filtered = {}
 
-RefChemGlossary:appendWidget(RefChemGlossary.search, 5, 20)
-RefChemGlossary:appendWidget(RefChemGlossary.list, 5, 45)
+-- slightly lower placement so text doesn't collide with title
+RefChemGlossary:appendWidget(RefChemGlossary.search, 5, 25)
+RefChemGlossary:appendWidget(RefChemGlossary.list, 5, 50)
 RefChemGlossary.list:setSize(-10, -40)
 
 local function wrapText(text, width)
@@ -87,6 +88,12 @@ function RefChemGlossary:pushed()
     platform.window:setFocus(true)
     RefChemGlossary.search:giveFocus()
     RefChemGlossary.updateList()
+end
+
+-- ensure returning from a definition restores focus to the search box
+function RefChemGlossary:screenGetFocus()
+    platform.window:setFocus(true)
+    RefChemGlossary.search:giveFocus()
 end
 
 function RefChemGlossary:paint(gc)
