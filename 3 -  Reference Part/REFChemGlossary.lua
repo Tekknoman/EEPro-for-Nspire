@@ -3,6 +3,8 @@ RefChemGlossary = WScreen()
 
 RefChemGlossary.search = sInput()
 RefChemGlossary.search.placeholder = "Search"
+-- widen the box so entered text is visible
+RefChemGlossary.search.ww = -10
 RefChemGlossary.list = sList()
 RefChemGlossary.filtered = {}
 
@@ -75,10 +77,14 @@ function RefChemGlossary.list:action(idx)
     function ok:action()
         remove_screen(d)
     end
-    push_screen(d)
+    function d:escapeKey()
+        remove_screen(d)
+    end
+    push_screen_direct(d)
 end
 
 function RefChemGlossary:pushed()
+    platform.window:setFocus(true)
     RefChemGlossary.search:giveFocus()
     RefChemGlossary.updateList()
 end
