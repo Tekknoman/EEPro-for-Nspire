@@ -4197,6 +4197,8 @@ RefChemGlossary = WScreen()
 
 RefChemGlossary.search = sInput()
 RefChemGlossary.search.placeholder = "Search"
+-- ensure typed text shows in black
+RefChemGlossary.search.textcolor = {0,0,0}
 -- widen the box so entered text is visible
 RefChemGlossary.search.ww = -10
 RefChemGlossary.list = sList()
@@ -4456,6 +4458,24 @@ RefChemGlossary.entries = {
     {term="Verhältnisformel", topic="Bindungen", def="Chemische Formel, die für eine Verbindung das Verhältnis der Atome zueinander angibt. Da es bei Salzen keine kleinsten Stoffeinheiten (wie Moleküle) gibt, werden Salze über das konstante Verhältnis der Ionen beschrieben, aus denen sie aufgebaut sind."},
     {term="Wasserstoffbrücke", topic="Bindungen", def="Eine besonders starke Dipol-Dipol-Wechselwirkung, die zwischen Sauerstoff-, Stickstoff- oder Fluoratomen und den daran gebundenen Wasserstoffatomen auftritt."},
     {term="Zerfallsreihe/Zerfallskette", topic="Allgemein", def="Abfolge der Produkte (Nuklide), die durch radioaktiven Zerfall entstehen."},
+    -- einfache Übersicht organischer Moleküle
+    {term="CH4", topic="Organische Chemie", def="Methan, Schmelzpunkt –184°C, Siedepunkt –164°C, gasförmig bei 20 °C."},
+    {term="C2H6", topic="Organische Chemie", def="Ethan, Schmelzpunkt –172°C, Siedepunkt –89°C, gasförmig bei 20 °C."},
+    {term="C3H8", topic="Organische Chemie", def="Propan, Schmelzpunkt –190°C, Siedepunkt –42°C, gasförmig bei 20 °C."},
+    {term="C4H10", topic="Organische Chemie", def="Butan, Schmelzpunkt –135°C, Siedepunkt –0,5°C, gasförmig bei 20 °C."},
+    {term="C5H12", topic="Organische Chemie", def="Pentan, Schmelzpunkt –129°C, Siedepunkt 36°C, flüssig bei 20 °C."},
+    {term="C6H14", topic="Organische Chemie", def="Hexan, Schmelzpunkt –94°C, Siedepunkt 69°C, flüssig bei 20 °C."},
+    {term="C7H16", topic="Organische Chemie", def="Heptan, Schmelzpunkt –90°C, Siedepunkt 98°C, flüssig bei 20 °C."},
+    {term="C8H18", topic="Organische Chemie", def="Octan, Schmelzpunkt –59°C, Siedepunkt 126°C, flüssig bei 20 °C."},
+    {term="C9H20", topic="Organische Chemie", def="Nonan, Schmelzpunkt –54°C, Siedepunkt 151°C, flüssig bei 20 °C."},
+    {term="C10H22", topic="Organische Chemie", def="Decan, Schmelzpunkt –30°C, Siedepunkt 174°C, flüssig bei 20 °C."},
+    {term="C11H24", topic="Organische Chemie", def="Undecan, Schmelzpunkt –26°C, Siedepunkt 196°C, flüssig bei 20 °C."},
+    {term="C12H26", topic="Organische Chemie", def="Dodecan, Schmelzpunkt –10°C, Siedepunkt 216°C, flüssig bei 20 °C."},
+    {term="C13H28", topic="Organische Chemie", def="Tridecan, Schmelzpunkt –6°C, Siedepunkt 230°C, flüssig bei 20 °C."},
+    {term="C14H30", topic="Organische Chemie", def="Tetradecan, Schmelzpunkt 5.5°C, Siedepunkt 251°C, flüssig bei 20 °C."},
+    {term="C15H32", topic="Organische Chemie", def="Pentadecan, Schmelzpunkt 10°C, Siedepunkt 268°C, flüssig bei 20 °C."},
+    {term="C16H34", topic="Organische Chemie", def="Hexadecan, Schmelzpunkt 18°C, Siedepunkt 280°C, flüssig bei 20 °C."},
+    {term="C17H36", topic="Organische Chemie", def="Heptadecan, Schmelzpunkt 22°C, Siedepunkt 303°C, fest bei 20 °C."},
 }
 
 -- populate the list once entries are loaded so the
