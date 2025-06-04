@@ -1,13 +1,32 @@
--- Chemistry glossary screen with full text search
-RefChemGlossary = Screen()
+-- Use a widget-enabled screen for widget handling
+RefChemGlossary = WScreen()
 
 RefChemGlossary.search = sInput()
+RefChemGlossary.search.placeholder = "Search"
 RefChemGlossary.list = sList()
 RefChemGlossary.filtered = {}
 
-RefChemGlossary:appendWidget(RefChemGlossary.search, 5, 5)
-RefChemGlossary:appendWidget(RefChemGlossary.list, 5, 30)
+RefChemGlossary:appendWidget(RefChemGlossary.search, 5, 20)
+RefChemGlossary:appendWidget(RefChemGlossary.list, 5, 45)
 RefChemGlossary.list:setSize(-10, -40)
+
+local function wrapText(text, width)
+    local lines = {}
+    platform.withGC(function(gc)
+        local current = ""
+        for word in text:gmatch("%S+") do
+            local candidate = current=="" and word or (current .. " " .. word)
+            if gc:getStringWidth(candidate) > width then
+                if current ~= "" then table.insert(lines, current) end
+                current = word
+            else
+                current = candidate
+            end
+        end
+        if current ~= "" then table.insert(lines, current) end
+    end)
+    return lines
+end
 
 function RefChemGlossary.updateList()
     local q = string.lower(RefChemGlossary.search.value or "")
@@ -46,10 +65,9 @@ function RefChemGlossary.list:action(idx)
     local d = Dialog(e.term, 30, 20, 300, 180)
     local ok = sButton("OK")
     d:appendWidget(ok, -10, -5)
-    local y=0
-    for line in e.def:gmatch("[^\n]+") do
-        d:appendWidget(sLabel(line), 10, 25 + y*14)
-        y=y+1
+    local lines = wrapText(e.def, d.w - 20)
+    for i,line in ipairs(lines) do
+        d:appendWidget(sLabel(line), 10, 25 + (i-1)*14)
     end
     function d:postPaint(gc)
         nativeBar(gc, self, self.h-40)
@@ -232,3 +250,7 @@ RefChemGlossary.entries = {
     {term="Wasserstoffbrücke", topic="Bindungen", def="Eine besonders starke Dipol-Dipol-Wechselwirkung, die zwischen Sauerstoff-, Stickstoff- oder Fluoratomen und den daran gebundenen Wasserstoffatomen auftritt."},
     {term="Zerfallsreihe/Zerfallskette", topic="Allgemein", def="Abfolge der Produkte (Nuklide), die durch radioaktiven Zerfall entstehen."},
 }
+
+-- populate the list once entries are loaded so the
+-- glossary isn't empty when first opened
+RefChemGlossary.updateList()

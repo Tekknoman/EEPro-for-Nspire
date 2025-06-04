@@ -438,17 +438,12 @@ WScreen	= addExtension(Screen, WidgetManager)
 Dialog	=	class(WScreen)
 
 function Dialog:init(title,xx,yy,ww,hh)
-
-	self.yy	=	yy
-	self.xx	=	xx
-	self.hh	=	hh
-	self.ww	=	ww
-	self.title	=	title
-	self:size()
-	
-	self.widgets	=	{}
-	self.focus	=	0
-	    
+        -- Ensure base Screen init so animations work
+        Screen.init(self, xx, yy, ww, hh)
+        
+        self.title      =       title
+        self.widgets    =       {}
+        self.focus      =       0
 end
 
 function Dialog:paint(gc)
