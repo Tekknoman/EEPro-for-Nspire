@@ -2587,17 +2587,12 @@ WScreen	= addExtension(Screen, WidgetManager)
 Dialog	=	class(WScreen)
 
 function Dialog:init(title,xx,yy,ww,hh)
-
-	self.yy	=	yy
-	self.xx	=	xx
-	self.hh	=	hh
-	self.ww	=	ww
-	self.title	=	title
-	self:size()
-	
-	self.widgets	=	{}
-	self.focus	=	0
-	    
+        -- Ensure base Screen init so animations work
+        Screen.init(self, xx, yy, ww, hh)
+        
+        self.title      =       title
+        self.widgets    =       {}
+        self.focus      =       0
 end
 
 function Dialog:paint(gc)
@@ -2853,6 +2848,7 @@ function sInput:init()
 	self.bgcolor	=	{255,255,255}
     self.focuscolor = platform.isColorDisplay() and {40,148,184} or {0,0,0}
 	self.disabledcolor	= {128,128,128}
+	self.textcolor	=	{0,0,0}
 	self.font	=	{"sansserif", "r", 10}
 	self.disabled	= false
 end
@@ -2893,9 +2889,11 @@ function sInput:paint(gc)
 	end
 	--]]
 	
-	if self.disabled or self.value == "" then
-		gc:setColorRGB(uCol(self.disabledcolor))
-	end
+        if self.disabled or self.value == "" then
+                gc:setColorRGB(uCol(self.disabledcolor))
+        else
+                gc:setColorRGB(uCol(self.textcolor))
+        end
 	if self.value == ""  then
 		text	= self.placeholder or ""
 	end
@@ -4194,16 +4192,40 @@ function RefBoolExpr:escapeKey()
 	only_screen_back(Ref)
 end
 
--- Chemistry glossary screen with full text search
-RefChemGlossary = Screen()
+-- Use a widget-enabled screen for widget handling
+RefChemGlossary = WScreen()
 
 RefChemGlossary.search = sInput()
+RefChemGlossary.search.placeholder = "Search"
+-- ensure typed text shows in black
+RefChemGlossary.search.textcolor = {0,0,0}
+-- widen the box so entered text is visible
+RefChemGlossary.search.ww = -10
 RefChemGlossary.list = sList()
 RefChemGlossary.filtered = {}
 
-RefChemGlossary:appendWidget(RefChemGlossary.search, 5, 5)
-RefChemGlossary:appendWidget(RefChemGlossary.list, 5, 30)
+-- slightly lower placement so text doesn't collide with title
+RefChemGlossary:appendWidget(RefChemGlossary.search, 5, 25)
+RefChemGlossary:appendWidget(RefChemGlossary.list, 5, 50)
 RefChemGlossary.list:setSize(-10, -40)
+
+local function wrapText(text, width)
+    local lines = {}
+    platform.withGC(function(gc)
+        local current = ""
+        for word in text:gmatch("%S+") do
+            local candidate = current=="" and word or (current .. " " .. word)
+            if gc:getStringWidth(candidate) > width then
+                if current ~= "" then table.insert(lines, current) end
+                current = word
+            else
+                current = candidate
+            end
+        end
+        if current ~= "" then table.insert(lines, current) end
+    end)
+    return lines
+end
 
 function RefChemGlossary.updateList()
     local q = string.lower(RefChemGlossary.search.value or "")
@@ -4242,10 +4264,9 @@ function RefChemGlossary.list:action(idx)
     local d = Dialog(e.term, 30, 20, 300, 180)
     local ok = sButton("OK")
     d:appendWidget(ok, -10, -5)
-    local y=0
-    for line in e.def:gmatch("[^\n]+") do
-        d:appendWidget(sLabel(line), 10, 25 + y*14)
-        y=y+1
+    local lines = wrapText(e.def, d.w - 20)
+    for i,line in ipairs(lines) do
+        d:appendWidget(sLabel(line), 10, 25 + (i-1)*14)
     end
     function d:postPaint(gc)
         nativeBar(gc, self, self.h-40)
@@ -4253,12 +4274,22 @@ function RefChemGlossary.list:action(idx)
     function ok:action()
         remove_screen(d)
     end
-    push_screen(d)
+    function d:escapeKey()
+        remove_screen(d)
+    end
+    push_screen_direct(d)
 end
 
 function RefChemGlossary:pushed()
+    platform.window:setFocus(true)
     RefChemGlossary.search:giveFocus()
     RefChemGlossary.updateList()
+end
+
+-- ensure returning from a definition restores focus to the search box
+function RefChemGlossary:screenGetFocus()
+    platform.window:setFocus(true)
+    RefChemGlossary.search:giveFocus()
 end
 
 function RefChemGlossary:paint(gc)
@@ -4427,7 +4458,29 @@ RefChemGlossary.entries = {
     {term="Verhältnisformel", topic="Bindungen", def="Chemische Formel, die für eine Verbindung das Verhältnis der Atome zueinander angibt. Da es bei Salzen keine kleinsten Stoffeinheiten (wie Moleküle) gibt, werden Salze über das konstante Verhältnis der Ionen beschrieben, aus denen sie aufgebaut sind."},
     {term="Wasserstoffbrücke", topic="Bindungen", def="Eine besonders starke Dipol-Dipol-Wechselwirkung, die zwischen Sauerstoff-, Stickstoff- oder Fluoratomen und den daran gebundenen Wasserstoffatomen auftritt."},
     {term="Zerfallsreihe/Zerfallskette", topic="Allgemein", def="Abfolge der Produkte (Nuklide), die durch radioaktiven Zerfall entstehen."},
+    -- einfache Übersicht organischer Moleküle
+    {term="CH4", topic="Organische Chemie", def="Methan, Schmelzpunkt –184°C, Siedepunkt –164°C, gasförmig bei 20 °C."},
+    {term="C2H6", topic="Organische Chemie", def="Ethan, Schmelzpunkt –172°C, Siedepunkt –89°C, gasförmig bei 20 °C."},
+    {term="C3H8", topic="Organische Chemie", def="Propan, Schmelzpunkt –190°C, Siedepunkt –42°C, gasförmig bei 20 °C."},
+    {term="C4H10", topic="Organische Chemie", def="Butan, Schmelzpunkt –135°C, Siedepunkt –0,5°C, gasförmig bei 20 °C."},
+    {term="C5H12", topic="Organische Chemie", def="Pentan, Schmelzpunkt –129°C, Siedepunkt 36°C, flüssig bei 20 °C."},
+    {term="C6H14", topic="Organische Chemie", def="Hexan, Schmelzpunkt –94°C, Siedepunkt 69°C, flüssig bei 20 °C."},
+    {term="C7H16", topic="Organische Chemie", def="Heptan, Schmelzpunkt –90°C, Siedepunkt 98°C, flüssig bei 20 °C."},
+    {term="C8H18", topic="Organische Chemie", def="Octan, Schmelzpunkt –59°C, Siedepunkt 126°C, flüssig bei 20 °C."},
+    {term="C9H20", topic="Organische Chemie", def="Nonan, Schmelzpunkt –54°C, Siedepunkt 151°C, flüssig bei 20 °C."},
+    {term="C10H22", topic="Organische Chemie", def="Decan, Schmelzpunkt –30°C, Siedepunkt 174°C, flüssig bei 20 °C."},
+    {term="C11H24", topic="Organische Chemie", def="Undecan, Schmelzpunkt –26°C, Siedepunkt 196°C, flüssig bei 20 °C."},
+    {term="C12H26", topic="Organische Chemie", def="Dodecan, Schmelzpunkt –10°C, Siedepunkt 216°C, flüssig bei 20 °C."},
+    {term="C13H28", topic="Organische Chemie", def="Tridecan, Schmelzpunkt –6°C, Siedepunkt 230°C, flüssig bei 20 °C."},
+    {term="C14H30", topic="Organische Chemie", def="Tetradecan, Schmelzpunkt 5.5°C, Siedepunkt 251°C, flüssig bei 20 °C."},
+    {term="C15H32", topic="Organische Chemie", def="Pentadecan, Schmelzpunkt 10°C, Siedepunkt 268°C, flüssig bei 20 °C."},
+    {term="C16H34", topic="Organische Chemie", def="Hexadecan, Schmelzpunkt 18°C, Siedepunkt 280°C, flüssig bei 20 °C."},
+    {term="C17H36", topic="Organische Chemie", def="Heptadecan, Schmelzpunkt 22°C, Siedepunkt 303°C, fest bei 20 °C."},
 }
+
+-- populate the list once entries are loaded so the
+-- glossary isn't empty when first opened
+RefChemGlossary.updateList()
 
 RefConstants = Screen()
 

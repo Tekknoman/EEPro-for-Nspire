@@ -151,6 +151,7 @@ function sInput:init()
 	self.bgcolor	=	{255,255,255}
     self.focuscolor = platform.isColorDisplay() and {40,148,184} or {0,0,0}
 	self.disabledcolor	= {128,128,128}
+	self.textcolor	=	{0,0,0}
 	self.font	=	{"sansserif", "r", 10}
 	self.disabled	= false
 end
@@ -191,9 +192,11 @@ function sInput:paint(gc)
 	end
 	--]]
 	
-	if self.disabled or self.value == "" then
-		gc:setColorRGB(uCol(self.disabledcolor))
-	end
+        if self.disabled or self.value == "" then
+                gc:setColorRGB(uCol(self.disabledcolor))
+        else
+                gc:setColorRGB(uCol(self.textcolor))
+        end
 	if self.value == ""  then
 		text	= self.placeholder or ""
 	end
